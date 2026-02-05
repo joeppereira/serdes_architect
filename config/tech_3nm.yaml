@@ -1,0 +1,28 @@
+# 3nm GAA Technology Reference for 400G/200G SerDes
+node_info:
+  process: "3nm_GAA"
+  v_dd: 0.75
+  nyquist_target_ghz: 32.0  # For PCIe 7.0
+
+analog_front_end:
+  ctle_stages: 3
+  ctle_power_per_stage_mw: 1.2
+  vga_power_mw: 2.5
+  adc_7bit_power_mw: 14.5
+
+equalization_legs:
+  dfe_tap_area_um2: 8.5
+  dfe_tap_pwr_mw: 0.35
+  tx_driver_pwr_per_leg_mw: 0.40
+  main_driver_legs: 64
+  tap_resolution_bits: 6
+
+clocking:
+  pll_base_power_mw: 12.0
+  cdr_power_mw: 3.40
+  pll_rj_rms_fs: 150.0  # Random Jitter floor
+  deskew_step_fs: 150.0 # Resolution of path matching
+
+impedance_matching:
+  target_z0: 85
+  rx_term_z: 95
