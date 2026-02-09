@@ -1,0 +1,119 @@
+# Behavioral Model Parameters for SerDes Architect AI
+# This file consolidates implicit constants and heuristics from the Python code
+# to allow for easier tuning and integration with advanced AI models.
+
+# --- General Simulation Parameters ---
+general:
+  samples_per_ui: 64 # Number of samples per Unit Interval (UI)
+  energy_efficiency_target: 0.591 # pJ/bit from README.md
+
+# --- Channel Model Details ---
+channel_model:
+  s_parameter_file: "data/channel_400g.s4p"
+  nyquist_loss_db: 22.56 # Default baseline loss at Nyquist (32 GHz for 128G)
+  # Derived from previous runs/diagnostics
+  package_parasitics_isi_mv: 56.96 # The 56mV "Margin Thief"
+
+# --- Equalizer Parameters ---
+equalizer_parameters:
+  dfe_tap_area_um2: 10.0 # um^2 per DFE tap
+  dfe_tap_pwr_mw_factor: 0.50 # mW per DFE tap
+  vga_power_mw_factor: 2.5 # mW for VGA
+  adc_7bit_power_mw_factor: 14.5 # mW for ADC
+  ffe:
+    num_taps: 4
+    tap_positions: [-2, -1, 0, 1] # Pre-cursor, Main, Post-cursor
+    coefficient_ranges:
+      c_neg2: [-0.2, 0.0]
+      c_neg1: [-0.2, 0.0]
+      c0: [0.5, 1.0]
+      c_pos1: [-0.3, -0.1]
+    resolution_bits: 6
+    default_preset: [0, -0.1, 0.7, -0.2] # Example preset
+  ffe_c1_max_abs: 0.15 # Max absolute value for FFE C1 tap (heuristic for PAM4 eye linearity)
+  tx_driver_bw_limit_factor: 0.75 # From physics.py
+  reflection_tax_delay_ui: 2 # From physics.py
+  ctle:
+    zero_factor: 0.25 # From physics.py
+    pole1_factor: 1.5 # From physics.py
+    pole2_factor: 2.0 # From physics.py
+    ctle_power_per_stage_mw_factor: 1.2 # mW per CTLE stage
+
+# --- CDR & Jitter Model ---
+cdr:
+  standard_latency_cycles: 12
+  speculative_latency_cycles: 1
+  pi_resolution: 64 # Default PI resolution
+  rj_floor_ui: 0.02 # Random Jitter floor (2% UI RMS)
+  dither_penalty_factor: 0.002 # Penalty increases with BW (from optimize_cdr_bandwidth)
+  ber_sigma: 6 # For BER calculation (e.g., 6-sigma for 1e-9 BER)
+  baseline_latency_cycles: 24 # For PPA calculation
+  cdr_power_mw_factor: 3.40 # For PPA calculation
+  # Heuristic for latency penalty (from optimize_cdr_bandwidth in main.py)
+  latency_margin_penalty_per_cycle: 0.01 # UI margin loss per cycle of latency
+
+# --- Clocking Parameters ---
+clocking_parameters:
+  pll_base_power_mw_factor: 12.0 # mW for PLL
+
+# --- PPA Calibration ---
+ppa_cost:
+  # Derived from previous PPA table
+  ffe_power_mw: 4.52 # From the PPA table, approx
+  afe_ctle_power_mw: 2.10 # From the PPA table, approx
+  dfe_power_mw: 6.00 # From the PPA table, approx
+  # The remaining power (raw link baseline) will be calculated.
+  cdr_power_per_latency_cycle_mw: 0.28 # Approx: (7.20 - 3.40) / (24 - 1) * 12 (7.2mw at 1 cycle, 3.4mw at 24 cycles)
+  
+# --- Global Sweep Parameters ---
+global_sweep_parameters:
+  baseline_v_margin: 36.31 # From PPA table, post FFE/DFE/CDR
+  baseline_nyquist_loss: 22.56 # From previous analysis
+  loss_sensitivity_factor: 1.8 # Heuristic: mV loss per dB
+  pass_threshold_mv: 15.0 # mV threshold for PASS
+  losses: [15, 20, 25, 30, 35] # dB at Nyquist
+
+# --- Behavioral Model Parameters (for stats.py) ---
+behavioral_model:
+  ideal_v_opening: 133 # Ideal Vpp/3
+  dfe_efficiency: 0.85 # 85% efficiency for DFE recovery
+  cdr_tax_per_ps: 1.5 # 1.5mV loss per ps of latency
+
+# --- Monte-Carlo Distributions ---
+monte_carlo:
+  base_latency: 4 # ps, representing optimized latency
+  base_bw: 20     # MHz, optimized CDR bandwidth (placeholder)
+  parameters:
+    latency_sigma_ps: 1 # ps standard deviation for logic speed
+    dfe_tap_err_sigma_mv: 2.0 # mV standard deviation for summer offset
+    cdr_bandwidth_sigma_mhz: 1.0 # MHz standard deviation for PLL variation
+    isi_measured_mean: 56.96 # Mean value for Channel/Package variance
+    isi_measured_sigma_mv: 5.0 # mV standard deviation for Channel/Package variance
+
+# --- Simulation Controls ---
+simulation:
+  pass_threshold_mv: 15.0 # mV threshold for a PASS verdict
+  ui_time_ps: 7.81 # ps for 128G links
+
+# --- PPA Table Data (for display in baseline analysis) ---
+ppa_table_data:
+  - stage_name: "Raw Link"
+    vertical_margin_mv: -15.99
+    horizontal_margin_ui: 0.350
+    power_mw: 59.60
+  - stage_name: "+ FFE (Tx)"
+    vertical_margin_mv: 7.99
+    horizontal_margin_ui: 0.420
+    power_mw: 4.52
+  - stage_name: "+ CTLE (Rx)"
+    vertical_margin_mv: 12.50
+    horizontal_margin_ui: 0.580
+    power_mw: 2.10
+  - stage_name: "+ DFE (Rx)"
+    vertical_margin_mv: 36.31
+    horizontal_margin_ui: 0.610
+    power_mw: 6.00
+  - stage_name: "+ CDR (Final)"
+    vertical_margin_mv: 36.31
+    horizontal_margin_ui: 0.485
+    power_mw: 7.20

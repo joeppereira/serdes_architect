@@ -1,13 +1,18 @@
 import numpy as np
+import yaml
 from collections import deque
 
 class ClockPathEngine:
-    def __init__(self, tech_file_data):
+    def __init__(self, tech_file_data, params_file='config/parameters.yaml'):
+        # Load behavioral model parameters
+        with open(params_file, 'r') as f:
+            self.params = yaml.safe_load(f)
+
         # Constants for 3nm clock distribution
-        self.ps_per_mm = 6.7         # Propagation delay on metal
-        self.jitter_floor_fs = 150   # Intrinsic PLL RJ
-        self.jitter_per_mm_fs = 50   # Additive jitter from supply noise
-        self.deskew_step_fs = 150    # Resolution of one deskew leg
+        self.ps_per_mm = self.params['clock_path_parameters']['ps_per_mm']
+        self.jitter_floor_fs = tech_file_data['clocking']['pll_rj_rms_fs'] # Use from tech_file as before
+        self.jitter_per_mm_fs = self.params['clock_path_parameters']['jitter_per_mm_fs']
+        self.deskew_step_fs = self.params['clock_path_parameters']['deskew_step_fs']
 
     def calculate_timing_budget(self, rate_gbps, distance_um, num_deskew_legs=64):
         """
@@ -50,13 +55,17 @@ class ClockPathEngine:
 from collections import deque
 
 class Behavioral_CDR:
-    def __init__(self, ui_ps, latency_cycles=12, pi_resolution=64):
+    def __init__(self, ui_ps, latency_cycles, pi_resolution, params_file='config/parameters.yaml'):
+        # Load behavioral model parameters
+        with open(params_file, 'r') as f:
+            self.params = yaml.safe_load(f)
+
         self.ui = ui_ps
         self.latency = latency_cycles
-        self.pi_step = 1.0 / pi_resolution  # PI resolution (e.g., 1/64th of a UI)
+        self.pi_step = 1.0 / pi_resolution
         
         # The 'Circular Buffer' simulating hardware pipeline delay
-        self.vote_buffer = deque([0] * latency_cycles)
+        self.vote_buffer = deque([0] * self.latency)
         
         self.current_phase_offset = 0.0
         self.phase_history = []
@@ -83,39 +92,38 @@ class Behavioral_CDR:
         
         return self.current_phase_offset
 
-    def calc_tracking(self, loop_bw_mhz, jitter_profile):
+    def calculate_vertical_jitter_tax(self, sbr_dfe, residual_jitter_rms_ui):
+        """
+        Calculates the vertical margin loss due to Jitter-to-Voltage conversion.
+        """
+        # 1. Convert residual jitter from UI to ps
+        residual_jitter_rms_ps = residual_jitter_rms_ui * self.ui
+        
+        # 2. Calculate dV/dt (slew rate) of the final eye
+        sbr_derivative = np.gradient(sbr_dfe)
+        dv_dt_v_per_sample = np.max(np.abs(sbr_derivative))
+        dt_ps = self.ui / 64
+        dv_dt_mv_per_ps = (dv_dt_v_per_sample * 1000) / dt_ps
+        
+        # 3. Calculate the Jitter Tax
+        vertical_margin_loss_mv = residual_jitter_rms_ps * dv_dt_mv_per_ps
+        
+        return round(vertical_margin_loss_mv, 2)
+        
+    def calculate_residual_jitter(self, jitter_profile, loop_bw_mhz):
         """
         Calculates the residual jitter after the CDR attempts to track it.
         """
         s_jitter_mhz = jitter_profile['freq_mhz']
         s_jitter_ui = jitter_profile['amplitude_ui']
         
-        # Simplified Tracking Gain: 20dB/decade slope
-        tracking_gain = 1.0 / (1 + (s_jitter_mhz / loop_bw_mhz)**2)
-        residual_jitter = s_jitter_ui * (1 - tracking_gain)
-        
-        return residual_jitter
+        # Simplified Tracking Gain (Jitter Transfer Function)
+        # This is a high-pass filter: CDR tracks out low-freq jitter.
+        tracking_gain = (s_jitter_mhz / loop_bw_mhz)**2 / (1 + (s_jitter_mhz / loop_bw_mhz)**2)
+        residual_sj = s_jitter_ui * tracking_gain
 
-    def optimize_cdr_bandwidth(self, jitter_profile):
-        """
-        Sweeps Loop BW from 5MHz to 50MHz to find the point where
-        the Horizontal Margin is maximized.
-        """
-        results = {}
-        for bw in np.linspace(5, 50, 10):
-            # Calculate residual SJ after tracking
-            residual_sj = self.calc_tracking(bw, jitter_profile)
-            
-            # Dither penalty is a heuristic for self-inflicted noise
-            dither_penalty = bw * 0.002 # Penalty increases with BW
-            
-            # Total Jitter = Random Jitter (RJ) + Residual SJ + Dither
-            # 0.12 is the RJ floor from the previous model
-            total_jitter_ui = 0.12 + residual_sj + dither_penalty
-            
-            # Final margin is based on total jitter
-            final_margin = 0.5 - (6 * total_jitter_ui) # Using 6-sigma for BER
-            results[bw] = final_margin
-            
-        # Return the BW that gives the highest margin
-        return max(results, key=results.get), max(results.values())
+        # Total Jitter = Random Jitter (RJ) + Residual SJ
+        rj_floor_ui = self.params['cdr']['rj_floor_ui']
+        total_jitter_ui = np.sqrt(rj_floor_ui**2 + residual_sj**2)
+        
+        return total_jitter_ui
