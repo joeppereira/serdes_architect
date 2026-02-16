@@ -1,0 +1,70 @@
+{
+  "config_id": "mc_test",
+  "ffe_taps": [
+    0,
+    -0.1,
+    0.7,
+    -0.2
+  ],
+  "channel_loss_db": -22.560064096719326,
+  "cdr_mode": "speculative",
+  "ambient_temp_c": 25.0,
+  "stages": {
+    "0": {
+      "vert_mv": -15.0,
+      "horiz_ui": 0.35,
+      "rlm": 0.0,
+      "power_mw": 0.0,
+      "temp_c": 25.0
+    },
+    "1": {
+      "vert_mv": 8.0,
+      "horiz_ui": 0.42,
+      "rlm": 0.0,
+      "power_mw": 4.5,
+      "temp_c": 25.0
+    },
+    "2": {
+      "vert_mv": -20.0,
+      "horiz_ui": 0.25,
+      "rlm": 0.0,
+      "power_mw": 0.0,
+      "temp_c": 25.0
+    },
+    "3": {
+      "vert_mv": 0.0,
+      "horiz_ui": 0.45,
+      "rlm": 0.0,
+      "power_mw": 2.0,
+      "temp_c": 25.0
+    },
+    "4": {
+      "vert_mv": 25.0,
+      "horiz_ui": 0.55,
+      "rlm": 0.0,
+      "power_mw": 8.0,
+      "temp_c": 25.0
+    },
+    "5": {
+      "vert_mv": 35.0,
+      "horiz_ui": 0.6,
+      "rlm": 0.0,
+      "power_mw": 3.0,
+      "temp_c": 25.0
+    },
+    "6": {
+      "vert_mv": 36.0,
+      "horiz_ui": 0.48,
+      "rlm": 0.0,
+      "power_mw": 7.0,
+      "temp_c": 25.0
+    }
+  },
+  "ber_estimate": 1e-12,
+  "eye_height_mv": 11.830000000000002,
+  "eye_width_ui": 0.18757391406670654,
+  "total_power_mw": 36.6,
+  "max_junction_temp_c": 25.0,
+  "yield_pass": false,
+  "runtime_sec": 0.0
+}

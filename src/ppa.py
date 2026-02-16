@@ -39,17 +39,21 @@ class SiliconCostEngine:
 
     def calculate_cdr_power(self, latency_cycles):
         """
-        Calculates the power of the CDR based on latency.
-        Lower latency (more unrolling) costs more power due to increased logic.
+        Calculates the power of the CDR based on latency, using a two-component model.
+        Lower latency (more unrolling) increases P_parallel power, but reduces P_pipeline power.
         """
-        # Heuristic: CDR power is inversely proportional to latency, relative to a baseline.
-        # This models the "unroll tax" where faster CDR (lower latency) implies more hardware.
-        
-        baseline_latency = self.params['cdr']['baseline_latency_cycles']
-        baseline_cdr_power = self.params['cdr']['cdr_power_mw_factor']
-        
-        # Unroll Tax Factor: How much power increases as we reduce latency from the baseline
+        p_per_flop = self.params['cdr']['cdr_p_per_flop_mw']
+        p_base_unroll = self.params['cdr']['cdr_p_base_unroll_mw']
+        baseline_latency = self.params['cdr']['cdr_baseline_latency_cycles']
+
+        # P_pipeline: Power from pipeline registers (decreases with latency)
+        # Assuming fixed stages for now, proportional to latency
+        p_pipeline = latency_cycles * p_per_flop
+
+        # P_parallel: Power from parallel paths (increases as latency decreases)
+        # Models the unroll tax: more parallel paths for lower latency
         unroll_tax_factor = baseline_latency / latency_cycles
+        p_parallel = p_base_unroll * unroll_tax_factor
         
-        cdr_power = baseline_cdr_power * unroll_tax_factor
+        cdr_power = p_pipeline + p_parallel
         return cdr_power

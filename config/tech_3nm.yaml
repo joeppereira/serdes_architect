@@ -24,5 +24,9 @@ clocking:
   deskew_step_fs: 150.0 # Resolution of path matching
 
 impedance_matching:
-  target_z0: 85
-  rx_term_z: 95
+  target_z0: 100
+  rx_term_z: 100
+
+files:
+  itf: "data/technology/process_3nm.itf"
+  liberty: "data/technology/liberty_3nm.lib"

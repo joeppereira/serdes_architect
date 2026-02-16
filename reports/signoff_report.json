@@ -1,0 +1,50 @@
+{
+    "design_id": "PCIe7_3nm_128G_v1",
+    "verdict": "PASS",
+    "metrics": {
+        "eye_height_mv": 37.36,
+        "eye_width_ui": 0.507,
+        "tj_c": 37.9,
+        "timing_margin_ps": 4.14
+    },
+    "power_mw": 48.54,
+    "thermal_delta_c": 12.89,
+    "timing": {
+        "verdict": "PASS",
+        "ui_ps": 7.81,
+        "t_dead_zone_ps": 2.5,
+        "t_jitter_ps": 1.17,
+        "margin_ps": 4.14,
+        "max_freq_ghz": 272.34
+    },
+    "typical_report": {
+        "summary": {
+            "total_power_mw": 45.75,
+            "temp_state": "Typical"
+        },
+        "breakdown_mw": {
+            "device_poly_dynamic": 32.0,
+            "device_poly_static": 4.0,
+            "metal_interconnect": 9.75
+        },
+        "concentration": {
+            "hotspot_stage": "Stage 5 (DFE Sum)",
+            "power_density_w_mm2": 1505.88
+        }
+    },
+    "worst_case_report": {
+        "summary": {
+            "total_power_mw": 48.5418908145232,
+            "temp_state": "Typical"
+        },
+        "breakdown_mw": {
+            "device_poly_dynamic": 32.0,
+            "device_poly_static": 6.79,
+            "metal_interconnect": 9.75
+        },
+        "concentration": {
+            "hotspot_stage": "Stage 5 (DFE Sum)",
+            "power_density_w_mm2": 1505.88
+        }
+    }
+}

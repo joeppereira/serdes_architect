@@ -1,0 +1,14 @@
+# Mock Interconnect Technology File (ITF) for 3nm Process
+# Defines dielectric stack and conductor properties
+
+DIELECTRIC silicon_nitride { ER=7.5 THICKNESS=0.3 LOSS_TANGENT=0.002 }
+DIELECTRIC silicon_dioxide { ER=3.9 THICKNESS=0.5 LOSS_TANGENT=0.001 }
+
+# M1 - Local Routing
+CONDUCTOR metal1 { RESISTIVITY=0.015 WIDTH=0.035 THICKNESS=0.048 }
+
+# M2 - Intermediate
+CONDUCTOR metal2 { RESISTIVITY=0.018 WIDTH=0.045 SPACING=0.045 THICKNESS=0.07 }
+
+# M9 - Global Clock Distribution (Low Resistance)
+CONDUCTOR metal9 { RESISTIVITY=0.012 WIDTH=0.100 SPACING=0.100 THICKNESS=0.20 }

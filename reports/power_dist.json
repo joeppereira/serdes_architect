@@ -1,0 +1,15 @@
+{
+  "summary": {
+    "total_power_mw": 45.75,
+    "temp_state": "Typical"
+  },
+  "breakdown_mw": {
+    "device_poly_dynamic": 32.0,
+    "device_poly_static": 4.0,
+    "metal_interconnect": 9.75
+  },
+  "concentration": {
+    "hotspot_stage": "Stage 5 (DFE Sum)",
+    "power_density_w_mm2": 1505.88
+  }
+}

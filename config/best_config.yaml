@@ -1,0 +1,130 @@
+# Best Configuration from Verify Simulation
+# Optimal CTLE Zero Factor: 0.15
+
+technology:
+  node: "3nm_FinFET"
+  device_threshold: "SVT" # Reverted to Standard Threshold for Stability
+
+general:
+  samples_per_ui: 64
+  energy_efficiency_target: 0.591
+
+channel_loss_db: -36.0
+pvt_corner: "Worst-Case"
+
+# Optimized Parameters
+ctle_zero_factor: 0.15  # Optimized for -36dB Nyquist sharpen
+
+equalizer_parameters:
+  dfe_tap1_mv: 28.5       # Reverted to optimized value
+  v_pp_mv: 420.0          # Reverted to 420mV for robust margins
+  dfe_tap_area_um2: 25.0  # Increased Area for Thermal Relief (Heat Spreading)
+  dfe_tap_pwr_mw_factor: 0.50
+  vga_power_mw_factor: 2.5
+  adc_7bit_power_mw_factor: 14.5
+  ffe:
+    num_taps: 4
+    tap_positions: [-2, -1, 0, 1]
+    coefficient_ranges:
+      c_neg2: [-0.2, 0.0]
+      c_neg1: [-0.2, 0.0]
+      c0: [0.5, 1.0]
+      c_pos1: [-0.3, -0.1]
+    resolution_bits: 6
+    default_preset: [0, -0.1, 0.7, -0.2]
+  tx_ffe:
+    num_taps: 4
+    tap_positions: [-2, -1, 0, 1]
+    coefficient_ranges:
+      c_neg2: [-0.2, 0.0]
+      c_neg1: [-0.2, 0.0]
+      c0: [0.5, 1.0]
+      c_pos1: [-0.3, -0.1]
+    resolution_bits: 6
+    default_preset: [0, -0.1, 0.7, -0.2]
+  ffe_c1_max_abs: 0.15
+  rx_ffe:
+    num_taps: 29
+    main_tap_idx: 4
+    coefficient_resolution_bits: 6
+  dfe:
+    num_taps: 1
+    coefficient_resolution_bits: 6
+  tx_driver_bw_limit_factor: 0.75
+  reflection_tax_delay_ui: 2
+  ctle:
+    zero_factor: 0.15 # UPDATED TO OPTIMAL
+    pole1_factor: 1.5
+    pole2_factor: 2.0
+    ctle_power_per_stage_mw_factor: 1.2
+
+cdr:
+  standard_latency_cycles: 12
+  speculative_latency_cycles: 1
+  pi_resolution: 64
+  rj_floor_ui: 0.02
+  dither_penalty_factor: 0.002
+  ber_sigma: 6
+  latency_margin_penalty_per_cycle: 0.01
+  cdr_p_per_flop_mw: 0.1
+  cdr_p_base_unroll_mw: 0.5
+  cdr_baseline_latency_cycles: 24
+
+clocking_parameters:
+  pll_base_power_mw_factor: 12.0
+
+ppa_cost:
+  ffe_power_mw: 4.52
+  afe_ctle_power_mw: 2.10
+  dfe_power_mw: 6.00
+  cdr_power_per_latency_cycle_mw: 0.28
+  
+global_sweep_parameters:
+  baseline_v_margin: 36.31
+  baseline_nyquist_loss: 22.56
+  loss_sensitivity_factor: 1.8
+  pass_threshold_mv: 15.0
+  losses: [15, 20, 25, 30, 35]
+  ambient_temp_c: 25.0
+
+behavioral_model:
+  ideal_v_opening: 133
+  dfe_efficiency: 0.85
+  cdr_tax_per_ps: 1.5
+
+monte_carlo:
+  base_latency: 4
+  base_bw: 20
+  parameters:
+    latency_sigma_ps: 1
+    dfe_tap_err_sigma_mv: 2.0
+    cdr_bandwidth_sigma_mhz: 1.0
+    isi_measured_mean: 56.96
+    isi_measured_sigma_mv: 5.0
+
+simulation:
+  pass_threshold_mv: 15.0
+  pass_threshold_mv_horizontal_ui: 0.48
+  ui_time_ps: 7.81
+
+ppa_table_data:
+  - stage_name: "Raw Link"
+    vertical_margin_mv: -15.99
+    horizontal_margin_ui: 0.350
+    power_mw: 59.60
+  - stage_name: "+ FFE (Tx)"
+    vertical_margin_mv: 7.99
+    horizontal_margin_ui: 0.420
+    power_mw: 4.52
+  - stage_name: "+ CTLE (Rx)"
+    vertical_margin_mv: 12.50
+    horizontal_margin_ui: 0.580
+    power_mw: 2.10
+  - stage_name: "+ DFE (Rx)"
+    vertical_margin_mv: 36.31
+    horizontal_margin_ui: 0.610
+    power_mw: 6.00
+  - stage_name: "+ CDR (Final)"
+    vertical_margin_mv: 36.31
+    horizontal_margin_ui: 0.485
+    power_mw: 7.20

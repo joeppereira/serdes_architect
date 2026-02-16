@@ -1,0 +1,72 @@
+/* Mock Liberty File for 3nm Standard Cells */
+library(process_3nm) {
+  technology(cmos);
+  delay_model : table_lookup;
+  revision : 1.0;
+  
+  /* Operating Conditions */
+  operating_conditions(tt_025C_0v75) {
+    process : 1.0;
+    temperature : 25.0;
+    voltage : 0.75;
+  }
+
+  /* Unit definitions */
+  time_unit : "1ps";
+  voltage_unit : "1V";
+  current_unit : "1uA";
+  power_unit : "1mW";
+  capacitance_unit : "1fF";
+
+  /* Cells */
+  cell(INV_X1) {
+    area : 0.05;
+    leakage_power : 0.0001; /* mW */
+    pin(A) {
+      direction : input;
+      capacitance : 0.2;
+    }
+    pin(Y) {
+      direction : output;
+      function : "!A";
+      timing() {
+        intrinsic_rise : 2.5;
+        intrinsic_fall : 2.0;
+      }
+      internal_power() {
+        /* switching energy in pJ approx */
+        power(hidden) { values("0.00045"); } 
+      }
+    }
+  }
+
+  cell(DFF_X1) {
+    area : 0.15;
+    leakage_power : 0.0005;
+    pin(D) { direction : input; capacitance : 0.25; }
+    pin(CK) { direction : input; capacitance : 0.3; }
+    pin(Q) {
+      direction : output;
+      function : "D";
+      timing() {
+        intrinsic_rise : 5.0;
+        intrinsic_fall : 4.5;
+      }
+      internal_power() {
+        power(hidden) { values("0.0012"); }
+      }
+    }
+  }
+  
+  /* CTLE Stage approximation as a cell */
+  cell(CTLE_STAGE) {
+    area : 1.2;
+    leakage_power : 0.01;
+    pin(IN) { direction : input; }
+    pin(OUT) { direction : output; }
+    /* Analog power dominant */
+    internal_power() {
+        power(hidden) { values("1.2"); }
+    }
+  }
+}

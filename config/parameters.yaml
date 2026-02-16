@@ -30,7 +30,24 @@ equalizer_parameters:
       c_pos1: [-0.3, -0.1]
     resolution_bits: 6
     default_preset: [0, -0.1, 0.7, -0.2] # Example preset
+  tx_ffe: # Renamed for clarity to TX FFE
+    num_taps: 4
+    tap_positions: [-2, -1, 0, 1] # Pre-cursor, Main, Post-cursor
+    coefficient_ranges:
+      c_neg2: [-0.2, 0.0]
+      c_neg1: [-0.2, 0.0]
+      c0: [0.5, 1.0]
+      c_pos1: [-0.3, -0.1]
+    resolution_bits: 6
+    default_preset: [0, -0.1, 0.7, -0.2] # Example preset
   ffe_c1_max_abs: 0.15 # Max absolute value for FFE C1 tap (heuristic for PAM4 eye linearity)
+  rx_ffe: # New RX FFE parameters
+    num_taps: 29
+    main_tap_idx: 4 # Main tap is at index 4 for 4 pre + 1 main + 24 post = 29 taps
+    coefficient_resolution_bits: 6 # Example
+  dfe: # New DFE parameters
+    num_taps: 1
+    coefficient_resolution_bits: 6 # Example
   tx_driver_bw_limit_factor: 0.75 # From physics.py
   reflection_tax_delay_ui: 2 # From physics.py
   ctle:
@@ -47,10 +64,10 @@ cdr:
   rj_floor_ui: 0.02 # Random Jitter floor (2% UI RMS)
   dither_penalty_factor: 0.002 # Penalty increases with BW (from optimize_cdr_bandwidth)
   ber_sigma: 6 # For BER calculation (e.g., 6-sigma for 1e-9 BER)
-  baseline_latency_cycles: 24 # For PPA calculation
-  cdr_power_mw_factor: 3.40 # For PPA calculation
-  # Heuristic for latency penalty (from optimize_cdr_bandwidth in main.py)
   latency_margin_penalty_per_cycle: 0.01 # UI margin loss per cycle of latency
+  cdr_p_per_flop_mw: 0.1 # Power per flip-flop/stage for pipeline power
+  cdr_p_base_unroll_mw: 0.5 # Base power for unrolling logic
+  cdr_baseline_latency_cycles: 24 # Baseline latency for unroll power scaling
 
 # --- Clocking Parameters ---
 clocking_parameters:
@@ -72,6 +89,7 @@ global_sweep_parameters:
   loss_sensitivity_factor: 1.8 # Heuristic: mV loss per dB
   pass_threshold_mv: 15.0 # mV threshold for PASS
   losses: [15, 20, 25, 30, 35] # dB at Nyquist
+  ambient_temp_c: 25.0 # Default ambient temperature for simulation
 
 # --- Behavioral Model Parameters (for stats.py) ---
 behavioral_model:
@@ -93,6 +111,7 @@ monte_carlo:
 # --- Simulation Controls ---
 simulation:
   pass_threshold_mv: 15.0 # mV threshold for a PASS verdict
+  pass_threshold_mv_horizontal_ui: 0.48 # UI threshold for a PASS verdict
   ui_time_ps: 7.81 # ps for 128G links
 
 # --- PPA Table Data (for display in baseline analysis) ---

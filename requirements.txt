@@ -1,1 +1,5 @@
-# Libraries: numpy, scipy, scikit-rf, pyyaml, matplotlib
+numpy
+scipy
+scikit-rf
+pyyaml
+matplotlib
